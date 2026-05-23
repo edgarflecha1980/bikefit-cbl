@@ -1,13 +1,570 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>bikefit-cbl</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bike Fit — Custom Bike Lab</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#111a13; --card:#1a2b1d; --inp:#223026;
+      --bord:rgba(255,255,255,0.08); --bord2:rgba(255,255,255,0.12);
+      --coral:#f07860; --blue:#5b9bd5; --green:#5ac57a; --purple:#a78bfa;
+      --t:#f0f5f0; --ts:rgba(240,245,240,0.55); --td:rgba(240,245,240,0.28);
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t);min-height:100vh}
+
+    /* MODAL */
+    .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center}
+    .overlay.open{display:flex}
+    .modal{background:var(--card);border:1px solid var(--bord);border-radius:16px;padding:24px;width:480px;max-width:92vw}
+    .modal h3{font-size:16px;font-weight:500;margin-bottom:8px}
+    .modal p{font-size:13px;color:var(--ts);margin-bottom:16px;line-height:1.5}
+    .modal-ft{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+
+    /* HEADER */
+    .hdr{background:rgba(26,43,29,0.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--bord);padding:14px 28px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+    .hdr-l{display:flex;align-items:baseline;gap:10px}
+    .hdr-title{font-size:20px;font-weight:600}
+    .hdr-brand{font-size:12px;color:var(--ts)}
+    .hdr-athlete{font-size:13px;color:var(--td)}
+    .hdr-r{display:flex;align-items:center;gap:12px}
+    .saved{font-size:11px;color:var(--green);font-family:monospace}
+
+    /* TABS */
+    .tabbar{background:rgba(26,43,29,0.7);border-bottom:1px solid var(--bord);display:flex;overflow-x:auto;padding:0 28px}
+    .tbtn{background:transparent;border:none;border-bottom:2px solid transparent;color:var(--ts);padding:13px 20px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:400;white-space:nowrap;transition:all 0.15s;margin-bottom:-1px}
+    .tbtn.active{border-bottom-color:var(--coral);color:var(--coral);font-weight:500}
+    .pbar{height:2px;background:rgba(255,255,255,0.06)}
+    .pfill{height:100%;background:var(--coral);transition:width 0.3s;width:20%}
+
+    /* CONTENT */
+    .content{padding:24px;max-width:860px;margin:0 auto}
+    .tab{display:none}.tab.active{display:block}
+
+    /* CARDS & SECTIONS */
+    .card{background:var(--card);border:1px solid var(--bord);border-radius:16px;padding:20px 22px;margin-bottom:14px}
+    .sec{margin-bottom:20px}
+    .sec-hdr{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+    .sec-line{height:1.5px;width:16px;border-radius:1px;flex-shrink:0}
+    .sec-title{font-size:10.5px;font-weight:500;color:var(--ts);letter-spacing:.1em;text-transform:uppercase}
+    .divider{border-top:1px solid var(--bord);margin:16px 0}
+
+    /* GRID */
+    .g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:12px}
+    .g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:12px}
+    .g2s{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+
+    /* FIELDS */
+    .fld{display:flex;flex-direction:column;min-width:0}
+    .lbl{font-size:10.5px;font-weight:500;color:var(--ts);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px}
+    .frow{display:flex;align-items:center;gap:6px}
+    .unit{font-size:11px;color:var(--td);white-space:nowrap;flex-shrink:0}
+
+    input[type=text],input[type=number],input[type=password],select,textarea{
+      background:var(--inp);border:1px solid rgba(255,255,255,.1);border-radius:10px;
+      color:var(--t);font-family:'DM Sans',sans-serif;font-size:13.5px;
+      padding:9px 12px;outline:none;width:100%;transition:border-color .15s,box-shadow .15s;
+    }
+    input:focus,select:focus,textarea:focus{border-color:var(--coral);box-shadow:0 0 0 3px rgba(240,120,96,.15)}
+    select{cursor:pointer;-webkit-appearance:none;appearance:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='rgba(240,245,240,0.4)' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+    select option{background:#1b2a1e;color:var(--t)}
+    input::placeholder,textarea::placeholder{color:rgba(240,245,240,.25);font-style:italic}
+    textarea{resize:vertical;line-height:1.6}
+    input[type=number]{font-family:monospace}
+    input[type=checkbox]{width:auto;accent-color:var(--coral);cursor:pointer}
+
+    /* BILATERAL */
+    .birow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .bir{display:flex;align-items:center;gap:5px}
+    .bils{font-size:10px;font-weight:700;min-width:12px;flex-shrink:0}
+
+    /* CHECKBOXES */
+    .cbg{display:flex;flex-wrap:wrap;gap:12px}
+    .cbi{display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13.5px;user-select:none}
+
+    /* BUTTONS */
+    .btn{border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:11px 18px;cursor:pointer;transition:all .2s}
+    .btn-p{background:var(--coral);color:#fff}.btn-p:hover{opacity:.9}.btn-p:disabled{opacity:.5;cursor:wait}
+    .btn-o{background:transparent;border:1px solid var(--bord);color:var(--ts)}.btn-o:hover{border-color:var(--coral)}
+    .btn-sm{padding:7px 14px;font-size:12px}
+    .btn-full{width:100%}
+
+    /* NAV */
+    .nav{display:flex;justify-content:space-between;margin-top:8px}
+
+    /* IMAGES */
+    .imgcat-title{font-size:12px;font-weight:500;color:var(--ts);letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--bord);padding-bottom:6px;margin-bottom:10px;margin-top:16px}
+    .imggrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .imgitem{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:4/3;background:var(--inp)}
+    .imgitem img{width:100%;height:100%;object-fit:cover}
+    .imgrem{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.75);border:none;border-radius:4px;color:#fff;font-size:15px;width:26px;height:26px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .imgname{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);padding:4px 8px;font-size:10px;color:rgba(255,255,255,.75);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .dropz{border:1px dashed var(--bord);border-radius:12px;padding:32px;text-align:center;cursor:pointer;color:var(--ts);font-size:13px;transition:background .15s}
+    .dropz:hover{background:rgba(255,255,255,.04)}
+    .dropz-hint{font-size:11px;color:var(--td);margin-top:6px}
+
+    /* EXPORT */
+    .expg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+
+    @media print{
+      .hdr,.tabbar,.pbar,.nav,.expg,.np{display:none!important}
+      body{background:#fff!important;color:#111!important}
+      .card{background:#fff!important;border-color:#ddd!important}
+      input,select,textarea{background:#fff!important;border-color:#ddd!important;color:#111!important}
+      .tab{display:block!important}
+      .tab:not(.active){display:none!important}
+    }
+  </style>
+</head>
+<body>
+
+<!-- API Key Modal -->
+<div class="overlay" id="apiModal">
+  <div class="modal">
+    <h3>Chave API Anthropic</h3>
+    <p>Para gerar relatórios com IA, introduz a tua chave API da Anthropic (console.anthropic.com → API Keys). Fica guardada localmente no browser.</p>
+    <div class="fld">
+      <label class="lbl">Chave API</label>
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-...">
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-o btn-sm" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-p btn-sm" onclick="saveApiKey()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Header -->
+<div class="hdr np">
+  <div class="hdr-l">
+    <span class="hdr-title">Bike Fit</span>
+    <span class="hdr-brand">Custom Bike Lab</span>
+    <span class="hdr-athlete" id="hAthlete"></span>
+  </div>
+  <div class="hdr-r">
+    <span class="saved" id="savedInd"></span>
+    <button class="btn btn-o btn-sm" onclick="openModal()">⚙ API Key</button>
+    <button class="btn btn-o btn-sm" onclick="newSession()">Nova Sessão</button>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabbar np">
+  <button class="tbtn active" onclick="goTab(0)">Ciclista</button>
+  <button class="tbtn" onclick="goTab(1)">Biomecânica</button>
+  <button class="tbtn" onclick="goTab(2)">Podal</button>
+  <button class="tbtn" onclick="goTab(3)">Bicicleta</button>
+  <button class="tbtn" onclick="goTab(4)">Relatório</button>
+</div>
+<div class="pbar np"><div class="pfill" id="pfill"></div></div>
+
+<div class="content">
+
+<!-- TAB 0: CICLISTA -->
+<div class="tab active" id="t0">
+  <div class="card">
+    <div class="sec">
+      <div class="sec-hdr"><div class="sec-line" style="background:var(--coral)"></div><span class="sec-title">Identificação</span></div>
+      <div class="g2">
+        <div class="fld"><label class="lbl">Nome</label><input type="text" id="name" placeholder="Nome completo" oninput="u('name',this.value)"></div>
+        <div class="fld"><label class="lbl">Idade</label><div class="frow"><input type="number" id="age" oninput="u('age',this.value)"><span class="unit">anos</span></div></div>
+      </div>
+      <div class="g3">
+        <div class="fld"><label class="lbl">Peso</label><div class="frow"><input type="number" id="weight" oninput="u('weight',this.value)"><span class="unit">kg</span></div></div>
+        <div class="fld"><label class="lbl">Altura</label><div class="frow"><input type="number" id="height" oninput="u('height',this.value)"><span class="unit">cm</span></div></div>
+        <div class="fld"><label class="lbl">Nível</label><select id="level" onchange="u('level',this.value)"><option value="">—</option><option value="competicao">Competição</option><option value="treino">Treino</option><option value="lazer">Lazer</option></select></div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="sec">
+      <div class="sec-hdr"><div class="sec-line" style="background:var(--coral)"></div><span class="sec-title">Modalidade</span></div>
+      <div class="cbg" id="cbg">
+        <label class="cbi"><input type="checkbox" value="Estrada" onchange="uctx(this)"> Estrada</label>
+        <label class="cbi"><input type="checkbox" value="Gravel" onchange="uctx(this)"> Gravel</label>
+        <label class="cbi"><input type="checkbox" value="BTT" onchange="uctx(this)"> BTT</label>
+        <label class="cbi"><input type="checkbox" value="Triatlo" onchange="uctx(this)"> Triatlo</label>
+        <label class="cbi"><input type="checkbox" value="Indoor" onchange="uctx(this)"> Indoor</label>
+        <label class="cbi"><input type="checkbox" value="Outro" onchange="uctx(this)"> Outro</label>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="sec">
+      <div class="sec-hdr"><div class="sec-line" style="background:var(--blue)"></div><span class="sec-title">Anamnese & Condição Atual</span></div>
+      <div class="fld"><label class="lbl">Lesões, Patologias e Historial Relevante</label><textarea id="anamnesis" rows="7" placeholder="Lesões atuais ou passadas, queixas, cirurgias, assimetrias, patologias, medicação, limitações funcionais..." oninput="u('anamnesis',this.value)"></textarea></div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 1: BIOMECÂNICA -->
+<div class="tab" id="t1">
+  <div class="card">
+    <div class="sec">
+      <div class="sec-hdr"><div class="sec-line" style="background:var(--coral)"></div><span class="sec-title">Antropometria</span></div>
+      <div class="g2">
+        <div class="fld"><label class="lbl">Dist. Inter-ASIS</label><div class="frow"><input type="number" id="interASIS" oninput="u('interASIS',this.value)"><span class="unit">mm</span></div></div>
+        <div class="fld"><label class="lbl">Larg. Tuberosidades Isquiais</label><div class="frow"><input type="number" id="ischialW" oninput="u('ischialW',this.value)"><span class="unit">mm</span></div></div>
+      </div>
+      <div class="g3">
+        <div class="fld"><label class="lbl">Altura</label><div class="frow"><input type="number" id="altura" oninput="u('altura',this.value)"><span class="unit">cm</span></div></div>
+        <div class="fld"><label class="lbl">Comprimento Entrepernas</label><div class="frow"><input type="number" id="entrepernas" oninput="u('entrepernas',this.value)"><span class="unit">cm</span></div></div>
+        <div class="fld"><label class="lbl">Comprimento Braço</label><div class="frow"><input type="number" id="comprBraco" oninput="u('comprBraco',this.value)"><span class="unit">cm</span></div></div>
+      </div>
+      <div class="g2" style="margin-bottom:0">
+        <div class="fld"><label class="lbl">Inclinação Pélvica</label><select id="pelvisTilt" onchange="u('pelvisTilt',this.value)"><option value="">—</option><option value="neutro">Neutro</option><option value="hiperlordose">Hiperlordose</option><option value="lordose_reduzida">Lordose reduzida</option><option value="cifose_lombar">Cifose lombar</option></select></div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="sec">
+      <div class="sec-hdr"><div class="sec-line" style="background:var(--blue)"></div><span class="sec-title">Mobilidade & Flexibilidade</span></div>
+      <div class="g2">
+        <div class="fld"><label class="lbl">Flexão Lombo-Pélvica</label><select id="flexaoLomboPelvica" onchange="u('flexaoLomboPelvica',this.value)"><option value="">—</option><option value="reduzida">Reduzida</option><option value="media">Média amplitude</option><option value="boa">Boa</option><option value="excelente">Excelente</option></select></div>
+        <div class="fld"><label class="lbl">Extensão Coxo-Femoral</label><select id="extensaoCoxo" onchange="u('extensaoCoxo',this.value)"><option value="">—</option><option value="reduzida">Reduzida</option><option value="media">Média amplitude</option><option value="boa">Boa</option><option value="excelente">Excelente</option></select></div>
+      </div>
+      <div class="g2">
+        <div class="fld"><label class="lbl">Flexão Coxo-Femoral</label><select id="flexaoCoxo" onchange="u('flexaoCoxo',this.value)"><option value="">—</option><option value="reduzida">Reduzida</option><option value="media">Média amplitude</option><option value="boa">Boa</option><option value="excelente">Excelente</option></select></div>
+        <div class="fld"><label class="lbl">Lordose</label><select id="lordosis" onchange="u('lordosis',this.value)"><option value="">—</option><option value="neutra">Neutra</option><option value="reduzida">Reduzida</option><option value="hiperlordose">Hiperlordose</option></select></div>
+      </div>
+      <div class="g2">
+        <div class="fld"><label class="lbl">Mobilidade Torácica</label><select id="thoracic" onchange="u('thoracic',this.value)"><option value="">—</option><option value="reduzida">Reduzida</option><option value="media">Média amplitude</option><option value="boa">Boa</option><option value="excelente">Excelente</option></select></div>
+        <div class="fld"><label class="lbl">Mobilidade Ombro</label><select id="shoulder" onchange="u('shoulder',this.value)"><option value="">—</option><option value="reduzida">Reduzida</option><option value="media">Média amplitude</option><option value="boa">Boa</option><option value="excelente">Excelente</option></select></div>
+      </div>
+      <div class="fld"><label class="lbl">Notas de Mobilidade</label><textarea id="mobilityNotes" rows="3" placeholder="Limitações, assimetrias, compensações observadas, testes realizados..." oninput="u('mobilityNotes',this.value)"></textarea></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="sec">
+      <div class="sec-hdr"><div class="sec-line" style="background:var(--purple)"></div><span class="sec-title">Avaliação Postural & Conclusões</span></div>
+      <div class="fld" style="margin-bottom:12px"><label class="lbl">Avaliação Postural</label><textarea id="posturalNotes" rows="4" placeholder="Postura estática e dinâmica, desvios, rotações, compensações, cifose/lordose..." oninput="u('posturalNotes',this.value)"></textarea></div>
+      <div class="fld"><label class="lbl">Conclusões Biomecânicas</label><textarea id="bioConclusions" rows="4" placeholder="Síntese da avaliação funcional, implicações para o fit, prioridades de intervenção..." oninput="u('bioConclusions',this.value)"></textarea></div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 2: PODAL -->
+<div class="tab" id="t2">
+  <div class="card">
+    <div class="sec">
+      <div class="sec-hdr"><div class="sec-line" style="background:var(--coral)"></div><span class="sec-title">Morfologia do Pé</span></div>
+      <div class="g2">
+        <div class="fld"><label class="lbl">Comprimento</label><div class="birow">
+          <div class="bir"><span class="bils" style="color:var(--coral)">D</span><input type="number" id="fLenR" oninput="u('fLenR',this.value)"><span class="unit">mm</span></div>
+          <div class="bir"><span class="bils" style="color:var(--blue)">E</span><input type="number" id="fLenL" oninput="u('fLenL',this.value)"><span class="unit">mm</span></div>
+        </div></div>
+        <div class="fld"><label class="lbl">Largura (1ª – 5ª MTT)</label><div class="birow">
+          <div class="bir"><span class="bils" style="color:var(--coral)">D</span><input type="number" id="fWidR" oninput="u('fWidR',this.value)"><span class="unit">mm</span></div>
+          <div class="bir"><span class="bils" style="color:var(--blue)">E</span><input type="number" id="fWidL" oninput="u('fWidL',this.value)"><span class="unit">mm</span></div>
+        </div></div>
+      </div>
+      <div class="g2">
+        <div class="fld"><label class="lbl">Tipo de Arco</label><div class="birow">
+          <div class="bir"><span class="bils" style="color:var(--coral)">D</span><select id="archR" onchange="u('archR',this.value)"><option value="">—</option><option value="plano">Plano</option><option value="neutro">Neutro</option><option value="cavo_medio">Cavo médio</option><option value="cavo">Cavo</option></select></div>
+          <div class="bir"><span class="bils" style="color:var(--blue)">E</span><select id="archL" onchange="u('archL',this.value)"><option value="">—</option><option value="plano">Plano</option><option value="neutro">Neutro</option><option value="cavo_medio">Cavo médio</option><option value="cavo">Cavo</option></select></div>
+        </div></div>
+        <div class="fld"><label class="lbl">Pronação / Supinação</label><div class="birow">
+          <div>
+            <div class="bir" style="margin-bottom:5px"><span class="bils" style="color:var(--coral)">D</span><select id="pronTypeR" onchange="u('pronTypeR',this.value)"><option value="">—</option><option value="neutro">Neutro</option><option value="pronacao">Pronação</option><option value="supinacao">Supinação</option></select></div>
+            <div class="bir" style="padding-left:17px"><input type="number" min="0" max="20" step="0.5" id="pronDegR" placeholder="0–20" oninput="u('pronDegR',this.value)"><span class="unit">°</span></div>
+          </div>
+          <div>
+            <div class="bir" style="margin-bottom:5px"><span class="bils" style="color:var(--blue)">E</span><select id="pronTypeL" onchange="u('pronTypeL',this.value)"><option value="">—</option><option value="neutro">Neutro</option><option value="pronacao">Pronação</option><option value="supinacao">Supinação</option></select></div>
+            <div class="bir" style="padding-left:17px"><input type="number" min="0" max="20" step="0.5" id="pronDegL" placeholder="0–20" oninput="u('pronDegL',this.value)"><span class="unit">°</span></div>
+          </div>
+        </div></div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="sec">
+      <div class="sec-hdr"><div class="sec-line" style="background:var(--blue)"></div><span class="sec-title">Calçado & Equipamento</span></div>
+      <div class="g3">
+        <div class="fld"><label class="lbl">Marca Sapatilha</label><input type="text" id="shoeBrand" oninput="u('shoeBrand',this.value)"></div>
+        <div class="fld"><label class="lbl">Modelo</label><input type="text" id="shoeModel" oninput="u('shoeModel',this.value)"></div>
+        <div class="fld"><label class="lbl">Tamanho</label><input type="text" id="shoeSize" oninput="u('shoeSize',this.value)"></div>
+      </div>
+      <div class="g2">
+        <div class="fld"><label class="lbl">Posição Tacos (eixo → 1ª MTT)</label><div class="birow">
+          <div class="bir"><span class="bils" style="color:var(--coral)">D</span><input type="number" id="cleatR" oninput="u('cleatR',this.value)"><span class="unit">mm</span></div>
+          <div class="bir"><span class="bils" style="color:var(--blue)">E</span><input type="number" id="cleatL" oninput="u('cleatL',this.value)"><span class="unit">mm</span></div>
+        </div></div>
+        <div>
+          <div class="fld" style="margin-bottom:8px"><label class="lbl">Marca Palmilha</label><input type="text" id="insoleBrand" oninput="u('insoleBrand',this.value)"></div>
+          <div class="fld"><label class="lbl">Modelo Palmilha</label><input type="text" id="insoleModel" oninput="u('insoleModel',this.value)"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="sec">
+      <div class="sec-hdr"><div class="sec-line" style="background:var(--purple)"></div><span class="sec-title">Observações & Conclusões Podais</span></div>
+      <div class="fld"><label class="lbl">Notas</label><textarea id="footNotes" rows="7" placeholder="Craig's Test, Jack/Windlass Test, equinismo funcional, rigidez, padrão de carga, cunhas/wedges recomendados, intervenções, correiro, drop ideal..." oninput="u('footNotes',this.value)"></textarea></div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 3: BICICLETA -->
+<div class="tab" id="t3">
+  <div class="card">
+    <div class="sec">
+      <div class="sec-hdr"><div class="sec-line" style="background:var(--coral)"></div><span class="sec-title">Identificação da Bicicleta</span></div>
+      <div class="g3">
+        <div class="fld"><label class="lbl">Marca</label><input type="text" id="bkBrand" oninput="u('bkBrand',this.value)"></div>
+        <div class="fld"><label class="lbl">Modelo</label><input type="text" id="bkModel" oninput="u('bkModel',this.value)"></div>
+        <div class="fld"><label class="lbl">Tamanho</label><input type="text" id="bkSize" oninput="u('bkSize',this.value)"></div>
+      </div>
+      <div class="g2" style="margin-bottom:0">
+        <div class="fld"><label class="lbl">Ano</label><input type="number" id="bkYear" oninput="u('bkYear',this.value)"></div>
+        <div class="fld"><label class="lbl">Material</label><select id="bkMat" onchange="u('bkMat',this.value)"><option value="">—</option><option value="carbono">Carbono</option><option value="aluminio">Alumínio</option><option value="titanio">Titânio</option><option value="aco">Aço</option><option value="outro">Outro</option></select></div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="sec">
+      <div class="sec-hdr"><div class="sec-line" style="background:var(--blue)"></div><span class="sec-title">Componentes</span></div>
+      <div class="g2">
+        <div class="fld"><label class="lbl">Selim — Marca</label><input type="text" id="sadBrand" oninput="u('sadBrand',this.value)"></div>
+        <div class="fld"><label class="lbl">Selim — Modelo</label><input type="text" id="sadModel" oninput="u('sadModel',this.value)"></div>
+      </div>
+      <div class="g3">
+        <div class="fld"><label class="lbl">Guiador — Largura</label><div class="frow"><input type="number" id="hbWidth" oninput="u('hbWidth',this.value)"><span class="unit">mm</span></div></div>
+        <div class="fld"><label class="lbl">Guiador — Drop</label><div class="frow"><input type="number" id="hbDrop" oninput="u('hbDrop',this.value)"><span class="unit">mm</span></div></div>
+        <div class="fld"><label class="lbl">Guiador — Reach</label><div class="frow"><input type="number" id="hbReach" oninput="u('hbReach',this.value)"><span class="unit">mm</span></div></div>
+      </div>
+      <div class="g2">
+        <div class="fld"><label class="lbl">Tipo de Guiador</label><select id="hbType" onchange="u('hbType',this.value)"><option value="">—</option><option value="compacto">Compacto</option><option value="anatomico">Anatómico</option><option value="classico">Clássico</option><option value="flare">Flare</option><option value="aero">Aero</option><option value="outro">Outro</option></select></div>
+        <div class="g2s">
+          <div class="fld"><label class="lbl">Avanço — Comp.</label><div class="frow"><input type="number" id="stemLen" oninput="u('stemLen',this.value)"><span class="unit">mm</span></div></div>
+          <div class="fld"><label class="lbl">Avanço — Ângulo</label><div class="frow"><input type="number" id="stemAngle" oninput="u('stemAngle',this.value)"><span class="unit">°</span></div></div>
+        </div>
+      </div>
+      <div class="g3" style="margin-bottom:0">
+        <div class="fld"><label class="lbl">Comp. Manivelas</label><div class="frow"><input type="number" id="crankLen" oninput="u('crankLen',this.value)"><span class="unit">mm</span></div></div>
+        <div class="fld"><label class="lbl">Q-Factor / Stance</label><div class="frow"><input type="number" id="qFactor" oninput="u('qFactor',this.value)"><span class="unit">mm</span></div></div>
+        <div class="fld"><label class="lbl">Pedais</label><input type="text" id="pedals" placeholder="Marca e modelo" oninput="u('pedals',this.value)"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="sec">
+      <div class="sec-hdr"><div class="sec-line" style="background:var(--green)"></div><span class="sec-title">Setup Atual</span></div>
+      <div class="g2">
+        <div class="fld"><label class="lbl">Altura Selim (BB → topo)</label><div class="frow"><input type="number" id="sadHeight" oninput="u('sadHeight',this.value)"><span class="unit">mm</span></div></div>
+        <div class="fld"><label class="lbl">Recuo Selim (centro anatómico)</label><div class="frow"><input type="number" id="sadSetback" oninput="u('sadSetback',this.value)"><span class="unit">mm</span></div></div>
+      </div>
+      <div class="g2">
+        <div class="fld"><label class="lbl">Selim → Guiador (horizontal)</label><div class="frow"><input type="number" id="sadToHb" oninput="u('sadToHb',this.value)"><span class="unit">mm</span></div></div>
+        <div class="fld"><label class="lbl">Selim → Manetes (reach)</label><div class="frow"><input type="number" id="sadToLevers" oninput="u('sadToLevers',this.value)"><span class="unit">mm</span></div></div>
+      </div>
+      <div class="g2">
+        <div class="fld"><label class="lbl">Inclinação Selim</label><div class="frow"><input type="number" id="sadTilt" oninput="u('sadTilt',this.value)"><span class="unit">°</span></div></div>
+        <div class="fld"><label class="lbl">Drop Guiador vs Selim</label><div class="frow"><input type="number" id="hbVsSad" placeholder="− abaixo / + acima" oninput="u('hbVsSad',this.value)"><span class="unit">mm</span></div></div>
+      </div>
+      <div class="fld"><label class="lbl">Notas do Setup Atual</label><textarea id="bikeNotes" rows="3" placeholder="Observações sobre posição atual, queixas relacionadas..." oninput="u('bikeNotes',this.value)"></textarea></div>
+    </div>
+    <div class="divider"></div>
+    <div class="sec">
+      <div class="sec-hdr"><div class="sec-line" style="background:var(--coral)"></div><span class="sec-title">Recomendações & Alterações</span></div>
+      <div class="fld"><label class="lbl">Peças a substituir / Ajustes recomendados</label><textarea id="recommendations" rows="5" placeholder="Alterações de selim, avanço, manivelas, tacos, palmilhas, ajustes de altura/recuo/reach, custo estimado..." oninput="u('recommendations',this.value)"></textarea></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="sec">
+      <div class="sec-hdr"><div class="sec-line" style="background:var(--blue)"></div><span class="sec-title">Análise Bikefitting.com</span></div>
+      <div id="bfImgBox">
+        <div class="dropz" onclick="document.getElementById('bfIn').click()">Clique para carregar screenshot do bikefitting.com<div class="dropz-hint">Incluída automaticamente no PDF e Word</div></div>
+      </div>
+      <input type="file" id="bfIn" accept="image/*" style="display:none" onchange="hBfImg(this)">
+    </div>
+  </div>
+</div>
+
+<!-- TAB 4: RELATÓRIO -->
+<div class="tab" id="t4">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:8px"><div class="sec-line" style="background:var(--coral);height:1.5px;width:16px;flex-shrink:0"></div><span class="sec-title">Relatório Final</span></div>
+      <button class="btn btn-p btn-sm" id="genBtn" onclick="genReport()">✦ Gerar com IA</button>
+    </div>
+    <div class="fld"><textarea id="summary" rows="16" placeholder="Relatório final da sessão — escreva manualmente ou gere automaticamente com IA.&#10;&#10;A geração IA produz análise biomecânica, podal, setup e recomendações em texto profissional." oninput="u('summary',this.value)"></textarea></div>
+  </div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="sec-line" style="background:var(--blue);height:1.5px;width:16px;flex-shrink:0"></div>
+        <span class="sec-title">Imagens da Sessão</span>
+        <span style="font-size:11px;color:var(--td)">antes_ · final_ · mapa_antes_ · mapa_final_</span>
+      </div>
+      <button class="btn btn-o btn-sm" onclick="document.getElementById('sImgIn').click()">+ Adicionar</button>
+    </div>
+    <input type="file" id="sImgIn" accept="image/*" multiple style="display:none" onchange="hSImgs(this)">
+    <div id="sImgsBox">
+      <div class="dropz" onclick="document.getElementById('sImgIn').click()">Clique para adicionar imagens<div class="dropz-hint">antes_ · final_ · mapa_antes_ · mapa_final_ — agrupadas automaticamente</div></div>
+    </div>
+  </div>
+  <div class="expg np">
+    <button class="btn btn-o btn-full" onclick="window.print()">🖨 Imprimir / PDF</button>
+    <button class="btn btn-p btn-full" onclick="expWord()">📄 Exportar Word (.doc)</button>
+  </div>
+</div>
+
+<!-- Navigation -->
+<div class="nav np">
+  <button class="btn btn-o btn-sm" id="prevBtn" onclick="goTab(curTab-1)" disabled>← Anterior</button>
+  <button class="btn btn-p btn-sm" id="nextBtn" onclick="goTab(curTab+1)">Seguinte →</button>
+</div>
+
+</div><!-- /content -->
+
+<script>
+const FIELDS=['name','age','weight','height','level','anamnesis',
+  'interASIS','ischialW','altura','entrepernas','comprBraco','pelvisTilt',
+  'flexaoLomboPelvica','extensaoCoxo','flexaoCoxo','lordosis','thoracic','shoulder',
+  'mobilityNotes','posturalNotes','bioConclusions',
+  'fLenR','fLenL','fWidR','fWidL','archR','archL',
+  'pronTypeR','pronTypeL','pronDegR','pronDegL',
+  'shoeBrand','shoeModel','shoeSize','cleatR','cleatL','insoleBrand','insoleModel','footNotes',
+  'bkBrand','bkModel','bkSize','bkYear','bkMat',
+  'sadBrand','sadModel','hbWidth','hbDrop','hbReach','hbType','stemLen','stemAngle',
+  'crankLen','qFactor','pedals',
+  'sadHeight','sadSetback','sadToHb','sadToLevers','sadTilt','hbVsSad',
+  'bikeNotes','recommendations','summary'];
+
+let S={},ctx=[],bfImg=null,sImgs=[],curTab=0,saveT=null;
+
+function u(k,v){S[k]=v;if(k==='name')document.getElementById('hAthlete').textContent=v?`— ${v}`:'';sched();}
+function uctx(cb){ctx=cb.checked?[...ctx,cb.value]:ctx.filter(v=>v!==cb.value);S.context=ctx;sched();}
+function sched(){clearTimeout(saveT);saveT=setTimeout(save,900);}
+function save(){
+  localStorage.setItem('bf_s',JSON.stringify({...S,context:ctx}));
+  const el=document.getElementById('savedInd');
+  const t=new Date().toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});
+  el.textContent=`✓ ${t}`;setTimeout(()=>{if(el.textContent.includes(t))el.textContent='';},3000);
+}
+
+function load(){
+  const d=localStorage.getItem('bf_s');if(!d)return;
+  S=JSON.parse(d);ctx=S.context||[];
+  FIELDS.forEach(k=>{const el=document.getElementById(k);if(el&&S[k]!=null)el.value=S[k];});
+  ctx.forEach(v=>document.querySelectorAll('#cbg input').forEach(cb=>{if(cb.value===v)cb.checked=true;}));
+  if(S.name)document.getElementById('hAthlete').textContent=`— ${S.name}`;
+}
+
+function newSession(){
+  if(!confirm('Iniciar nova sessão? Os dados atuais serão apagados.'))return;
+  localStorage.removeItem('bf_s');S={};ctx=[];bfImg=null;sImgs=[];
+  FIELDS.forEach(k=>{const el=document.getElementById(k);if(el)el.value='';});
+  document.querySelectorAll('#cbg input').forEach(cb=>cb.checked=false);
+  document.getElementById('hAthlete').textContent='';
+  document.getElementById('savedInd').textContent='';
+  rBfImg();rSImgs();
+}
+
+function goTab(n){
+  if(n<0||n>4)return;
+  curTab=n;
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===n));
+  document.querySelectorAll('.tbtn').forEach((b,i)=>b.classList.toggle('active',i===n));
+  document.getElementById('pfill').style.width=`${((n+1)/5)*100}%`;
+  document.getElementById('prevBtn').disabled=n===0;
+  const nb=document.getElementById('nextBtn');
+  nb.disabled=n===4;nb.style.opacity=n===4?'0.3':'1';nb.style.cursor=n===4?'default':'pointer';
+}
+
+function openModal(){document.getElementById('apiKeyInput').value=localStorage.getItem('bf_key')||'';document.getElementById('apiModal').classList.add('open');}
+function closeModal(){document.getElementById('apiModal').classList.remove('open');}
+function saveApiKey(){const k=document.getElementById('apiKeyInput').value.trim();if(k)localStorage.setItem('bf_key',k);closeModal();}
+
+function hBfImg(inp){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();r.onload=e=>{bfImg=e.target.result;rBfImg();};r.readAsDataURL(f);inp.value='';
+}
+function rBfImg(){
+  const c=document.getElementById('bfImgBox');
+  c.innerHTML=bfImg
+    ?`<div style="position:relative"><img src="${bfImg}" style="width:100%;border-radius:10px;border:1px solid var(--bord)"><button onclick="bfImg=null;rBfImg()" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.75);border:none;border-radius:6px;color:#fff;font-size:15px;width:28px;height:28px;cursor:pointer">×</button></div>`
+    :`<div class="dropz" onclick="document.getElementById('bfIn').click()">Clique para carregar screenshot do bikefitting.com<div class="dropz-hint">Incluída automaticamente no PDF e Word</div></div>`;
+}
+
+function hSImgs(inp){
+  Array.from(inp.files).forEach(f=>{const r=new FileReader();r.onload=e=>{sImgs.push({src:e.target.result,name:f.name});rSImgs();};r.readAsDataURL(f);});
+  inp.value='';
+}
+function catOf(n){
+  const s=(n||'').toLowerCase();
+  if(s.startsWith('mapa_antes')||s.startsWith('map_antes'))return'mapa_antes';
+  if(s.startsWith('mapa_final')||s.startsWith('mapa_depois')||s.startsWith('map_final'))return'mapa_final';
+  if(s.startsWith('antes')||s.startsWith('before'))return'antes';
+  if(s.startsWith('depois')||s.startsWith('final')||s.startsWith('after'))return'final';
+  return'geral';
+}
+const CAT_L={antes:'Posição Inicial',final:'Posição Final / Ajustada',mapa_antes:'Mapeamento — Inicial',mapa_final:'Mapeamento — Final',geral:'Outras Imagens'};
+const CAT_O=['antes','final','mapa_antes','mapa_final','geral'];
+function rSImgs(){
+  const c=document.getElementById('sImgsBox');
+  if(!sImgs.length){c.innerHTML=`<div class="dropz" onclick="document.getElementById('sImgIn').click()">Clique para adicionar imagens<div class="dropz-hint">antes_ · final_ · mapa_antes_ · mapa_final_ — agrupadas automaticamente</div></div>`;return;}
+  const g={};sImgs.forEach(img=>{const cat=catOf(img.name);if(!g[cat])g[cat]=[];g[cat].push(img);});
+  let h='';
+  CAT_O.filter(cat=>g[cat]).forEach(cat=>{
+    h+=`<div class="imgcat-title">${CAT_L[cat]}</div><div class="imggrid">`;
+    g[cat].forEach(img=>{const i=sImgs.indexOf(img);h+=`<div class="imgitem"><img src="${img.src}" alt="${img.name}"><button class="imgrem" onclick="sImgs.splice(${i},1);rSImgs()">×</button><div class="imgname">${img.name}</div></div>`;});
+    h+='</div>';
+  });
+  h+=`<div style="display:flex;justify-content:space-between;margin-top:8px"><button class="btn btn-o btn-sm" onclick="document.getElementById('sImgIn').click()">+ Adicionar mais</button><button style="background:none;border:none;color:var(--td);font-size:11px;cursor:pointer" onclick="sImgs=[];rSImgs()">Limpar todas</button></div>`;
+  c.innerHTML=h;
+}
+
+async function genReport(){
+  const key=localStorage.getItem('bf_key');
+  if(!key){alert('Introduz a chave API primeiro (botão ⚙ API Key no topo).');openModal();return;}
+  const btn=document.getElementById('genBtn');btn.textContent='⟳ A gerar...';btn.disabled=true;
+  const prompt=`És um bike fitter nível 3 e profissional de reabilitação desportiva. Com base nos dados seguintes, escreve um relatório profissional completo em português europeu. Inclui: introdução ao atleta, avaliação biomecânica (com valores medidos), avaliação podal, análise do setup atual, recomendações detalhadas e conclusão. Prosa fluida, linguagem técnica mas acessível.\n\nDADOS:\n${JSON.stringify({...S,context:ctx},null,2)}`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt}]})
+    });
+    const d=await res.json();
+    if(d.content){const t=d.content.map(b=>b.text||'').join('');document.getElementById('summary').value=t;u('summary',t);}
+    else if(d.error)alert('Erro API: '+d.error.message);
+  }catch(e){alert('Erro: '+e.message);}
+  btn.textContent='✦ Gerar com IA';btn.disabled=false;
+}
+
+function expWord(){
+  const s={...S,context:ctx};
+  const r=(l,v)=>v?`<tr><td style="color:#888;font-size:9pt;width:42%;padding:3pt 6pt;border-bottom:.5pt solid #eee">${l}</td><td style="font-size:10pt;padding:3pt 6pt;border-bottom:.5pt solid #eee">${v}</td></tr>`:'';
+  const sec=(t,c)=>`<h2 style="font-size:12pt;color:#d97706;border-bottom:1pt solid #d97706;padding-bottom:3pt;margin:14pt 0 8pt">${t}</h2>${c}`;
+  const tbl=rows=>`<table style="width:100%;border-collapse:collapse">${rows}</table>`;
+  const g={};sImgs.forEach(img=>{const cat=catOf(img.name);if(!g[cat])g[cat]=[];g[cat].push(img);});
+  if(bfImg){if(!g.geral)g.geral=[];g.geral.unshift({src:bfImg,name:'Bikefitting.com'});}
+  const imgH=CAT_O.filter(cat=>g[cat]).map(cat=>`<h3 style="font-size:10pt;color:#555;margin:10pt 0 5pt">${CAT_L[cat]}</h3><div style="display:flex;flex-wrap:wrap;gap:8pt">${g[cat].map(img=>`<div style="width:48%"><img src="${img.src}" style="width:100%;border:.5pt solid #ddd"/><p style="font-size:8pt;color:#999;text-align:center">${img.name}</p></div>`).join('')}</div>`).join('');
+  const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><style>body{font-family:Calibri,sans-serif;font-size:10.5pt;line-height:1.5;margin:2cm}h1{font-size:18pt;color:#1a2b1e}</style></head><body>
+<h1>Relatório de Bike Fit</h1><p style="color:#777;font-size:10pt;margin-bottom:14pt">Custom Bike Lab · ${new Date().toLocaleDateString('pt-PT')}</p>
+${sec('Dados do Atleta',tbl([r('Nome',s.name),r('Idade',s.age?s.age+' anos':''),r('Peso',s.weight?s.weight+' kg':''),r('Altura',s.height?s.height+' cm':''),r('Modalidade',(s.context||[]).join(', ')),r('Nível',s.level)].join('')))}
+${s.anamnesis?sec('Anamnese',`<p style="font-size:10pt">${s.anamnesis}</p>`):''}
+${sec('Avaliação Biomecânica',tbl([r('Dist. Inter-ASIS',s.interASIS?s.interASIS+' mm':''),r('Tuberosidades Isquiais',s.ischialW?s.ischialW+' mm':''),r('Comprimento Entrepernas',s.entrepernas?s.entrepernas+' cm':''),r('Comprimento Braço',s.comprBraco?s.comprBraco+' cm':''),r('Inclinação Pélvica',s.pelvisTilt),r('Flexão Lombo-Pélvica',s.flexaoLomboPelvica),r('Extensão Coxo-Femoral',s.extensaoCoxo),r('Flexão Coxo-Femoral',s.flexaoCoxo),r('Lordose',s.lordosis),r('Mobilidade Torácica',s.thoracic),r('Mobilidade Ombro',s.shoulder)].join('')))}
+${s.bioConclusions?`<p style="font-size:10pt;margin-top:8pt">${s.bioConclusions}</p>`:''}
+${sec('Avaliação Podal',tbl([r('Comprimento D/E',s.fLenR&&s.fLenL?`${s.fLenR} / ${s.fLenL} mm`:''),r('Largura D/E',s.fWidR&&s.fWidL?`${s.fWidR} / ${s.fWidL} mm`:''),r('Arco D/E',s.archR&&s.archL?`${s.archR} / ${s.archL}`:''),r('Pronação/Sup. D',s.pronTypeR?`${s.pronTypeR}${s.pronDegR?' — '+s.pronDegR+'°':''}`:''),r('Pronação/Sup. E',s.pronTypeL?`${s.pronTypeL}${s.pronDegL?' — '+s.pronDegL+'°':''}`:''),r('Sapatilha',s.shoeBrand?`${s.shoeBrand} ${s.shoeModel} (${s.shoeSize})`:''),r('Tacos D/E',s.cleatR&&s.cleatL?`${s.cleatR} / ${s.cleatL} mm`:''),r('Palmilha',s.insoleBrand?`${s.insoleBrand} ${s.insoleModel}`:'')].join('')))}
+${s.footNotes?`<p style="font-size:10pt;margin-top:8pt">${s.footNotes}</p>`:''}
+${sec('Bicicleta & Componentes',tbl([r('Bicicleta',s.bkBrand?`${s.bkBrand} ${s.bkModel} ${s.bkSize} (${s.bkYear||'—'})`:''),r('Material',s.bkMat),r('Selim',s.sadBrand?`${s.sadBrand} ${s.sadModel}`:''),r('Guiador',s.hbWidth?`${s.hbWidth}mm larg. · drop ${s.hbDrop||'—'}mm · reach ${s.hbReach||'—'}mm`:''),r('Tipo Guiador',s.hbType),r('Avanço',s.stemLen?`${s.stemLen}mm / ${s.stemAngle||'—'}°`:''),r('Manivelas',s.crankLen?s.crankLen+' mm':''),r('Q-Factor',s.qFactor?s.qFactor+' mm':''),r('Pedais',s.pedals)].join('')))}
+${sec('Setup Atual',tbl([r('Altura Selim',s.sadHeight?s.sadHeight+' mm':''),r('Recuo Selim',s.sadSetback?s.sadSetback+' mm':''),r('Selim → Guiador',s.sadToHb?s.sadToHb+' mm':''),r('Selim → Manetes',s.sadToLevers?s.sadToLevers+' mm':''),r('Inclinação Selim',s.sadTilt?s.sadTilt+' °':''),r('Drop Guiador vs Selim',s.hbVsSad?s.hbVsSad+' mm':'')].join('')))}
+${s.bikeNotes?`<p style="font-size:10pt;margin-top:8pt">${s.bikeNotes}</p>`:''}
+${s.recommendations?sec('Recomendações',`<p style="font-size:10pt">${s.recommendations}</p>`):''}
+${s.summary?sec('Relatório / Conclusões',`<p style="font-size:10pt;line-height:1.7">${s.summary.replace(/\n/g,'<br>')}</p>`):''}
+${bfImg?sec('Análise Bikefitting.com',`<img src="${bfImg}" style="max-width:100%;margin-top:6pt">`):''}
+${(sImgs.length||bfImg)?sec('Imagens da Sessão',imgH):''}
+</body></html>`;
+  const blob=new Blob(['\ufeff',html],{type:'application/msword'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;
+  a.download=`Bikefit_${s.name||'atleta'}_${new Date().toLocaleDateString('pt-PT').replace(/\//g,'-')}.doc`;
+  a.click();URL.revokeObjectURL(url);
+}
+
+load();goTab(0);
+</script>
+</body>
 </html>
