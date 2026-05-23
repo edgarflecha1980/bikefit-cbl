@@ -519,15 +519,15 @@ async function genReport(){
   const key=localStorage.getItem('bf_key');
   if(!key){alert('Introduz a chave API primeiro (botão ⚙ API Key no topo).');openModal();return;}
   const btn=document.getElementById('genBtn');btn.textContent='⟳ A gerar...';btn.disabled=true;
-  const prompt=`És um bike fitter nível 3 e profissional de reabilitação desportiva. Com base nos dados seguintes, escreve um relatório profissional completo em português europeu. Inclui: introdução ao atleta, avaliação biomecânica (com valores medidos), avaliação podal, análise do setup atual, recomendações detalhadas e conclusão. Prosa fluida, linguagem técnica mas acessível.\n\nDADOS:\n${JSON.stringify({...S,context:ctx},null,2)}`;
-  try{
+  const prompt=`És um bike fitter nível 3 e profissional de reabilitação desportiva. Com base nos dados seguintes, escreve um relatório profissional completo em português europeu. Inclui: introdução ao atleta, avaliação biomecânica (com valores medidos), avaliação podal, análise do setup atual, recomendações detalhadas e conclusão. \n\nDADOS:\n${JSON.stringify({...S,context:ctx},null,2)}`;
+  try{Prosa fluida, linguagem técnica mas acessível. IMPORTANTE: Não uses markdown, asteriscos (*), cardinais (#) nem hífens como lista. Escreve em texto corrido com parágrafos separados por linha em branco. Para títulos de secção usa apenas o texto em maiúsculas seguido de dois pontos.
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1500,messages:[{role:'user',content:prompt}]})
     });
     const d=await res.json();
-    if(d.content){const t=d.content.map(b=>b.text||'').join('');document.getElementById('summary').value=t;u('summary',t);}
+    if(d.content){const raw=d.content.map(b=>b.text||'').join('');const t=raw.replace(/#{1,6}\s*/g,'').replace(/\*\*(.*?)\*\*/g,'$1').replace(/__(.*?)__/g,'$1').replace(/\*(.*?)\*/g,'$1').replace(/^[-*+]\s+/gm,'').replace(/\n{3,}/g,'\n\n').trim();document.getElementById('summary').value=t;u('summary',t);}
     else if(d.error)alert('Erro API: '+d.error.message);
   }catch(e){alert('Erro: '+e.message);}
   btn.textContent='✦ Gerar com IA';btn.disabled=false;
