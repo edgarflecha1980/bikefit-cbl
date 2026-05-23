@@ -566,7 +566,7 @@ function TabRelatorio({d,set,bfImg,allData}) {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
-    'x-api-key': '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',
+    'x-api-key': import.meta.env.VITE_ANTHROPIC_KEY,
     'anthropic-version': '2023-06-01',
     'anthropic-dangerous-direct-browser-access': 'true',
   },
