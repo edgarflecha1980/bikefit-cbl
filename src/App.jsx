@@ -566,14 +566,13 @@ function TabRelatorio({d,set,bfImg,allData}) {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
-    'x-api-key': import.meta.env.VITE_ANTHROPIC_KEY,
+    'x-api-key': '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',
     'anthropic-version': '2023-06-01',
     'anthropic-dangerous-direct-browser-access': 'true',
   },
-        method:'POST',headers:{'Content-Type':'application/json','x-api-key':import.meta.env.VITE_ANTHROPIC_KEY,'anthropic-version':'2023-06-01'},
-        body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,
-          messages:[{role:'user',content:prompt}]})
-      });
+  body: JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,
+    messages:[{role:'user',content:prompt}]})
+});
       const j=await res.json();
       const text=j.content?.map(b=>b.text||'').join('');
       if(text) set(p=>({...p,summary:text}));
