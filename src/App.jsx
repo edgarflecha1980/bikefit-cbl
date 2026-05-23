@@ -562,7 +562,7 @@ function TabRelatorio({d,set,bfImg,allData}) {
     setGen(true);
     try {
       const prompt=`És um bike fitter nível 3 e profissional de reabilitação desportiva. Com base nos dados seguintes, escreve um relatório profissional completo em português europeu. Inclui: introdução ao atleta, avaliação biomecânica (com valores medidos), avaliação podal, análise do setup atual, recomendações detalhadas e conclusão. Prosa fluida, linguagem técnica mas acessível.\n\nDADOS:\n${JSON.stringify(allData,null,2)}`;
-      const res = await fetch('https://api.anthropic.com/v1/messages',{
+      '/api/generate'
         method:'POST',headers:{'Content-Type':'application/json','x-api-key':import.meta.env.VITE_ANTHROPIC_KEY,'anthropic-version':'2023-06-01'},
         body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,
           messages:[{role:'user',content:prompt}]})
