@@ -740,7 +740,11 @@ export default function App() {
         </div>
         <div style={{display:'flex',alignItems:'center',gap:14}}>
           {savedAt && <span style={{fontSize:11,color:C.green,fontFamily:'monospace'}}>✓ {savedAt}</span>}
-          <button onClick={()=>{if(confirm('Iniciar nova sessão?')){setD(INIT);setBfImg(null);setSavedAt(null);}}}
+          <a href="/relatorio-bikefit-cbl.html" target="_blank" rel="noopener"
+            style={{background:'rgba(255,255,255,0.07)',border:`1px solid ${C.border}`,borderRadius:10,
+              color:C.sec,fontSize:12,padding:'6px 14px',cursor:'pointer',textDecoration:'none'}}>
+            Relatório ↗
+          </a><button onClick={()=>{if(confirm('Iniciar nova sessão?')){setD(INIT);setBfImg(null);setSavedAt(null);}}}
             style={{background:'rgba(255,255,255,0.07)',border:`1px solid ${C.border}`,borderRadius:10,
               color:C.sec,fontSize:12,padding:'6px 14px',cursor:'pointer'}}>
             Nova Sessão
