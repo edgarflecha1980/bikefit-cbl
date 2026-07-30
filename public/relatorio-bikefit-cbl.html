@@ -96,13 +96,13 @@ table.ed .x:hover{color:#C0392B}
 /* ───────── report paper ───────── */
 .stack{transform:scale(var(--zoom));transform-origin:top center}
 .page{width:210mm;min-height:297mm;background:var(--paper);color:var(--ink);
-  padding:16mm 15mm 18mm;margin:0 auto 16px;position:relative;display:flex;flex-direction:column;
+  padding:15mm 15mm 14mm;margin:0 auto 16px;position:relative;display:flex;flex-direction:column;
   box-shadow:0 2px 22px #0002}
 .page .ph{display:flex;justify-content:space-between;align-items:baseline;
-  border-bottom:2.5px solid var(--ink);padding-bottom:5px;margin-bottom:11mm}
+  border-bottom:2.5px solid var(--ink);padding-bottom:5px;margin-bottom:9mm}
 .ph h3{font-family:var(--font-d);font-size:12.5pt;font-weight:600;letter-spacing:-.01em;margin:0}
 .ph .who{font-family:var(--font-m);font-size:7.5pt;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.pf{margin-top:auto;padding-top:7mm;border-top:1px solid var(--rule);display:flex;
+.pf{margin-top:auto;padding-top:5mm;border-top:1px solid var(--rule);display:flex;
   justify-content:space-between;align-items:flex-end;font-family:var(--font-m);font-size:7pt;color:var(--muted)}
 .pf .lg{display:flex;align-items:center;gap:7px}
 .pf .lg img{height:6mm;width:auto;display:block}
@@ -127,21 +127,24 @@ table.ed .x:hover{color:#C0392B}
 .blueprint{margin:12mm 0 0;opacity:.75}
 .blueprint svg{width:100%;height:auto;display:block}
 .cover .blueprint{margin-top:auto}
-.cover .pf{margin-top:8mm}
+.cover .pf{}
 
 /* content blocks */
 .page h4{font-family:var(--font-d);font-size:10.5pt;font-weight:600;margin:0 0 4px;letter-spacing:-.01em}
 .page p{font-size:9.7pt;line-height:1.55;margin:0 0 3.5mm;color:#232A28}
 .eyebrow{font-family:var(--font-m);font-size:7.5pt;letter-spacing:.13em;text-transform:uppercase;
-  color:var(--muted);margin:0 0 3mm;display:flex;align-items:center;gap:8px}
+  color:var(--muted);margin:0 0 3mm;display:flex;align-items:center;gap:8px;
+  break-after:avoid;page-break-after:avoid}
 .eyebrow::after{content:"";flex:1;height:1px;background:var(--rule)}
-.blk{margin-bottom:7mm}
+.pbody>*+.eyebrow{margin-top:7mm}
+.pbody>p{margin:0 0 3.5mm}
+.pbody>table.rp,.pbody>.antro,.pbody>.shots,.pbody>.bikeimg,.pbody>.tags,.pbody>.note{margin-bottom:4mm}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:9mm}
 
 /* measurement flags — signature element */
-.antro{display:grid;grid-template-columns:44mm 1fr;gap:9mm;align-items:start}
+.antro{display:grid;grid-template-columns:36mm 1fr;gap:8mm;align-items:start}
 .antro .fig{border:1px solid var(--rule);border-radius:5px;padding:3mm 2mm;background:#fff}
-.antro .fig img{width:100%;height:auto;display:block}
+.antro .fig img{width:100%;height:auto;max-height:92mm;object-fit:contain;display:block}
 .mlist{list-style:none;margin:0;padding:0}
 .mlist li{display:flex;align-items:center;gap:4mm;padding:2.5mm 0;border-bottom:1px solid var(--rule)}
 .mlist li:first-child{border-top:2px solid var(--ink)}
@@ -162,7 +165,7 @@ table.ed .x:hover{color:#C0392B}
 table.rp{width:100%;border-collapse:collapse;font-size:9.3pt}
 table.rp thead{display:table-header-group}
 table.rp tr{break-inside:avoid;page-break-inside:avoid}
-.blk,.recs .r,.shot{break-inside:avoid;page-break-inside:avoid}
+.r,.shot,.antro,.mlist li{break-inside:avoid;page-break-inside:avoid}
 table.rp th{font-family:var(--font-m);font-size:7.5pt;letter-spacing:.09em;text-transform:uppercase;
   color:var(--muted);font-weight:500;text-align:right;padding:0 0 5px;border-bottom:1.5px solid var(--ink)}
 table.rp th:first-child{text-align:left}
@@ -187,14 +190,14 @@ table.rp td.now b{background:var(--ink);color:#fff;padding:2.5px 7px;border-radi
 .shot .box.wide{aspect-ratio:3/4}
 .ph-empty{font-family:var(--font-m);font-size:7.5pt;color:#A9B1AE;text-align:center;padding:8px}
 .bikeimg{border:1px solid var(--rule);border-radius:5px;overflow:hidden;background:#fff;margin-bottom:6mm}
-.bikeimg img{width:100%;display:block}
+.bikeimg img{width:100%;height:auto;max-height:96mm;object-fit:contain;display:block}
 
 /* recommendations */
-.recs{border-top:2.5px solid var(--ink)}
-.recs .r{display:flex;gap:6mm;padding:4mm 0;border-bottom:1px solid var(--rule);align-items:flex-start}
-.recs .n{font-family:var(--font-m);font-size:8pt;color:var(--muted);width:22px;flex:none;padding-top:2px}
-.recs .t{flex:1;font-size:9.5pt;line-height:1.5}
-.recs .t b{display:block;font-family:var(--font-d);font-size:10pt;margin-bottom:2px}
+.r{display:flex;gap:6mm;padding:4mm 0;border-bottom:1px solid var(--rule);align-items:flex-start}
+.r.rtop{border-top:2.5px solid var(--ink)}
+.r .n{font-family:var(--font-m);font-size:8pt;color:var(--muted);width:22px;flex:none;padding-top:2px}
+.r .t{flex:1;font-size:9.5pt;line-height:1.5}
+.r .t b{display:block;font-family:var(--font-d);font-size:10pt;margin-bottom:2px}
 .st{font-family:var(--font-m);font-size:7pt;letter-spacing:.11em;padding:3px 8px;border-radius:3px;
   border:1px solid var(--ink);white-space:nowrap;margin-top:2px}
 .st.a{background:var(--ink);color:#fff}
@@ -495,8 +498,8 @@ function foot(){
   return `<div class="pf"><div class="lg"><img src="${S.img.logo||LOGO_MARK}" alt=""><span>custom bike lab</span></div>
     <div>${esc(g('email')||'info@cbikelab.com')} · ${esc(g('tel')||'938762893')}</div>
     <div class="pnum"></div></div>`; }
-function page(title,body){ return `<div class="page">${head(title)}<div>${body}</div>${foot()}</div>`; }
-function block(eyebrow,body){ return `<div class="blk"><p class="eyebrow">${eyebrow}</p>${body}</div>`; }
+function page(title,body){ return `<div class="page" data-t="${esc(title)}">${head(title)}<div class="pbody">${body}</div>${foot()}</div>`; }
+function block(eyebrow,body){ return `<p class="eyebrow">${eyebrow}</p>${body}`; }
 function para(...parts){ const t=parts.filter(Boolean).join(' '); return t?`<p>${nl(t)}</p>`:''; }
 function shot(cap,key,ratio){ return `<figure class="shot"><figcaption><b>${cap}</b></figcaption>
   <div class="box ${ratio||''}">${S.img[key]?`<img src="${S.img[key]}" alt="${cap}">`
@@ -597,16 +600,16 @@ function render(){
   if(S.img.cinAntes||S.img.cinDepois||g('cinNota'))
     P.push(page('Cinemática em carga',
       `<div class="shots">${shot('antes','cinAntes')}${shot('depois','cinDepois')}</div>`+
-      (g('cinNota')?block('Leitura',para(g('cinNota'))):'')
+      (g('cinNota')?block('Leitura da cinemática',para(g('cinNota'))):'')
     ));
 
   /* pressão */
   if(S.img.mapAntes||S.img.mapDepois||has('mapNota','selimModelo','selimTeste'))
     P.push(page('Mapeamento de pressão do selim',
       `<div class="shots">${shot('antes','mapAntes','wide')}${shot('depois','mapDepois','wide')}</div>`+
-      (has('selimModelo','selimTeste')?`<div class="blk" style="margin-top:8mm"><p class="eyebrow">Selim</p>
+      (has('selimModelo','selimTeste')?`<p class="eyebrow">Selim</p>
         <div class="tags">${g('selimModelo')?tag('Selim final',g('selimModelo'),'',1):''}
-        ${g('selimTeste')?tag('Testados',g('selimTeste'),'',1):''}</div></div>`:'')+
+        ${g('selimTeste')?tag('Testados',g('selimTeste'),'',1):''}</div>`:'')+
       (g('mapNota')?block('Leitura',para(g('mapNota'))):'')
     ));
 
@@ -615,7 +618,7 @@ function render(){
   const tituloBike=`Bicicleta${g('bikeMarca')?' · '+esc(g('bikeMarca')):''}${g('bikeTam')?', tam. '+esc(g('bikeTam')):''}`;
   if(S.img.bike||medRows.length||has('bikeMarca','bikeNota')){
     /* quantas linhas cabem na primeira folha depende do que está acima delas */
-    const cabeNa1a = S.img.bike ? 7 : 20, porFolha = 22;
+    const cabeNa1a = S.img.bike ? 5 : 17, porFolha = 20;
     const blocos=[];
     if(medRows.length){
       blocos.push(medRows.slice(0,cabeNa1a));
@@ -631,8 +634,8 @@ function render(){
         : '';
       P.push(page(i===0?tituloBike:'Bicicleta · cotas (continuação)',
         cabecalho+
-        (bloco.length?`<div class="blk"><p class="eyebrow">Cotas · antes e depois${
-          i>0?' · cont.':''}</p>${tableRows(bloco,['Medida','Antes','Final'])}</div>`:'')+
+        (bloco.length?`<p class="eyebrow">Cotas · antes e depois${
+          i>0?' · cont.':''}</p>${tableRows(bloco,['Medida','Antes','Final'])}`:'')+
         (ultimo&&g('bikeNota')?block('Alterações efectuadas',para(g('bikeNota'))):'')
       ));
     });
@@ -641,27 +644,62 @@ function render(){
   /* resumo */
   const recs=S.recs.filter(r=>r.t.trim());
   const flexTxt=g('flexGlobal')?`Da avaliação funcional realizada, os níveis de flexibilidade e mobilidade
-    apresentam-se ${g('flexGlobal').toLowerCase()} — aspecto relevante tendo em conta o contexto desportivo.`:'';
+    situam-se num patamar ${g('flexGlobal').toLowerCase()} — aspecto relevante tendo em conta o contexto desportivo.`:'';
   P.push(page('Resumo geral',
     (flexTxt||g('posicaoNota')||g('resumo')?block('Leitura da sessão',
       para(flexTxt)+para(g('posicaoNota'))+para(g('resumo'))):'')+
-    (recs.length?`<div class="blk"><p class="eyebrow">Recomendações</p><div class="recs">
+    (recs.length?`<p class="eyebrow">Recomendações</p>
       ${recs.map((r,i)=>{const [t0,...rest]=r.t.split('\n');
-        return `<div class="r"><div class="n">${String(i+1).padStart(2,'0')}</div>
+        return `<div class="r${i===0?' rtop':''}"><div class="n">${String(i+1).padStart(2,'0')}</div>
         <div class="t"><b>${esc(t0)}</b>${rest.length?nl(rest.join('\n')):''}</div>
-        <div class="st ${r.s==='ACEITE'?'a':r.s==='RECUSADO'?'r':''}">${esc(r.s)}</div></div>`}).join('')}
-      </div></div>`:'')+
-    (has('linkAlong','linkFlex')?`<div class="blk"><p class="eyebrow">Rotinas aconselhadas</p>
-      ${g('linkAlong')?`<p style="margin-bottom:1.5mm">Rotina de alongamentos<br><span class="link">${esc(g('linkAlong'))}</span></p>`:''}
-      ${g('linkFlex')?`<p>Desenvolvimento e manutenção da flexibilidade<br><span class="link">${esc(g('linkFlex'))}</span></p>`:''}
-      </div>`:'')+
+        <div class="st ${r.s==='ACEITE'?'a':r.s==='RECUSADO'?'r':''}">${esc(r.s)}</div></div>`}).join('')}`:'')+
+    (has('linkAlong','linkFlex')?`<p class="eyebrow">Rotinas aconselhadas</p>
+      ${g('linkAlong')?`<p>Rotina de alongamentos<br><span class="link">${esc(g('linkAlong'))}</span></p>`:''}
+      ${g('linkFlex')?`<p>Desenvolvimento e manutenção da flexibilidade<br><span class="link">${esc(g('linkFlex'))}</span></p>`:''}`:'')+
     (g('fecho')?`<div class="note">${nl(g('fecho'))}</div>`:'')
   ));
 
   const stack=document.getElementById('stack');
   stack.innerHTML=P.join('');
-  const pn=stack.querySelectorAll('.pnum'), n=pn.length;
+  numerar();
+  esperarImagens().then(reflow);
+}
+
+const MM=96/25.4;
+function numerar(){
+  const pn=document.querySelectorAll('#stack .pnum'), n=pn.length;
   pn.forEach((x,i)=>x.textContent=`${String(i+1).padStart(2,'0')} / ${String(n).padStart(2,'0')}`);
+}
+function esperarImagens(){
+  const imgs=[...document.querySelectorAll('#stack img')].filter(i=>!i.complete);
+  if(!imgs.length) return Promise.resolve();
+  return Promise.all(imgs.map(i=>new Promise(r=>{i.addEventListener('load',r,{once:true});
+    i.addEventListener('error',r,{once:true})}))).then(()=>{});
+}
+/* mede a altura real de cada folha; o que não couber desce para uma folha de continuação */
+const FOLHA=Math.round(297*MM);
+function reflow(){
+  const stack=document.getElementById('stack');
+  let voltas=0;
+  for(let i=0;i<stack.children.length && voltas<80;i++){
+    const pg=stack.children[i];
+    if(pg.classList.contains('cover')) continue;
+    const corpo=pg.querySelector('.pbody'); if(!corpo) continue;
+    if(pg.offsetHeight<=FOLHA || corpo.children.length<2) continue;
+    const nova=pg.cloneNode(false);
+    nova.innerHTML=pg.innerHTML;
+    const tit=(pg.dataset.t||'').replace(/\s*\((cont\.|continuação)\)$/,'');
+    nova.dataset.t=tit+' (cont.)';
+    nova.querySelector('.ph h3').textContent=tit+' (cont.)';
+    const corpoNovo=nova.querySelector('.pbody'); corpoNovo.innerHTML='';
+    pg.after(nova);
+    let guarda=0;
+    while(pg.offsetHeight>FOLHA && corpo.children.length>1 && guarda++<40){
+      corpoNovo.prepend(corpo.lastElementChild);
+    }
+    voltas++;
+  }
+  numerar();
 }
 
 /* fundo técnico da capa */
